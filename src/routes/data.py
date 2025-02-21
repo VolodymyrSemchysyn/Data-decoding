@@ -18,7 +18,6 @@ async def upload_file(file: UploadFile = File(...)):
     try:
         decoded_data = decode_binary_file(file.filename)
     except Exception as e:
-        traceback.print_exc()
         raise HTTPException(status_code=400, detail=f"Decoding error: {str(e)}")
 
     return {"filename": file.filename, "decoded_data": decoded_data}
@@ -62,7 +61,6 @@ async def read_file(filename: str):
     try:
         decoded_data = decode_binary_file(filename)
     except Exception as e:
-        traceback.print_exc()
         raise HTTPException(status_code=400, detail=f"Decoding error: {str(e)}")
 
     return {"filename": filename, "decoded_data": decoded_data}
