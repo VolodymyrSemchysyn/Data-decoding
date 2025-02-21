@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager</title>
+</head>
+<body>
+    <h1>File Manager</h1>
+
+    <!-- File Upload -->
+    <h2>Upload File</h2>
+    <input type="file" id="fileInput">
+    <button onclick="uploadFile()">Upload</button>
+    <p id="uploadStatus"></p>
+
+    <!-- Read File -->
+    <h2>Read File</h2>
+    <input type="text" id="readFilename" placeholder="Enter file name">
+    <button onclick="readFile()">Read</button>
+    <pre id="fileContent"></pre>
+
+    <!-- Edit File -->
+    <h2>Edit File</h2>
+    <input type="text" id="editFilename" placeholder="File name">
+    <textarea id="editContent" placeholder="Enter JSON data"></textarea>
+    <button onclick="editFile()">Save Changes</button>
+    <p id="editStatus"></p>
+
+    <!-- Download File -->
+    <h2>Download File</h2>
+    <input type="text" id="downloadFilename" placeholder="File name">
+    <button onclick="downloadFile()">Download</button>
+
+    <script>
+        async function uploadFile() {
+            let fileInput = document.getElementById("fileInput").files[0];
+            if (!fileInput) {
+                alert("Select a file!");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("file", fileInput);
+
+            let response = await fetch("/api/data/upload_file", {
+                method: "POST",
+                body: formData
+            });
+
+            let result = await response.json();
+            document.getElementById("uploadStatus").innerText = result.filename ? `File ${result.filename} uploaded` : "Error";
+        }
+
+        async function readFile() {
+            let filename = document.getElementById("readFilename").value;
+            if (!filename) {
+                alert("Enter a file name!");
+                return;
+            }
+
+            let response = await fetch(`/api/data/read?filename=${filename}`);
+            let result = await response.json();
+
+            if (result.decoded_data) {
+                document.getElementById("fileContent").innerText = JSON.stringify(result.decoded_data, null, 2);
+            } else {
+                document.getElementById("fileContent").innerText = "Error reading file";
+            }
+        }
+
+        async function editFile() {
+            let filename = document.getElementById("editFilename").value;
+            let content = document.getElementById("editContent").value;
+
+            if (!filename || !content) {
+                alert("Enter all data!");
+                return;
+            }
+
+            let response = await fetch("/api/data/edit", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    filename: filename,
+                    ...JSON.parse(content)
+                })
+            });
+
+            let result = await response.json();
+            document.getElementById("editStatus").innerText = result.message || "Error";
+        }
+
+        function downloadFile() {
+            let filename = document.getElementById("downloadFilename").value;
+            if (!filename) {
+                alert("Enter a file name!");
+                return;
+            }
+            window.location.href = `/api/data/download?filename=${filename}`;
+        }
+    </script>
+</body>
+</html>

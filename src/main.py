@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
 
 from src.routes.data import router
 
@@ -7,6 +8,8 @@ app = FastAPI(
     title="Data-decoding",
     description="App for decoding and encoding data",
 )
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
